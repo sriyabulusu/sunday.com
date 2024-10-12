@@ -8,7 +8,11 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 DEFAULT_CALENDAR_ID = "54d33b5da85ac849627cf6d0bf1a7d09e5eb9afe42d6be24b3c5e9ade279cc35@group.calendar.google.com"
-SCOPES = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/calendar.events"]
+SCOPES = [
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/calendar.events",
+]
+
 
 def authenticate_google_calendar():
     creds = None
@@ -83,13 +87,18 @@ def extract_calendar_events(
         print(f"An error occurred: {error}")
         return []
 
-def update_event(service, calendar_id='primary', event_id=None, values={}):
+
+def update_event(service, calendar_id="primary", event_id=None, values={}):
     event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
 
     for key, value in values.items():
         event[key] = value
 
-    updated_event = service.events().update(calendarId=calendar_id, eventId=event_id, body=event).execute()
+    updated_event = (
+        service.events()
+        .update(calendarId=calendar_id, eventId=event_id, body=event)
+        .execute()
+    )
 
 
 if __name__ == "__main__":
@@ -102,4 +111,9 @@ if __name__ == "__main__":
         cal_id = event["calendar_id"]
         print(json.dumps(event, indent=4))
 
-        update_event(service, calendar_id=cal_id, event_id=event_id, values={"summary": "CS 42 Class"})
+        update_event(
+            service,
+            calendar_id=cal_id,
+            event_id=event_id,
+            values={"summary": "CS 42 Class"},
+        )
