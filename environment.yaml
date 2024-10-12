@@ -391,4 +391,4 @@ dependencies:
       - wrapt==1.16.0
 variables:
   PYTORCH_ENABLE_MPS_FALLBACK: '1'
-prefix: /Users/druhi/mambaforge/envs/cookr
+prefix: /Users/druhi/mambaforge/envs/sunday

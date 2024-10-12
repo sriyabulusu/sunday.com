@@ -27,11 +27,27 @@ class GenerationParams:
     system_prompt: str = ""
 
 
+@dataclass
+class DateTime:
+    date: str
+    datetime: str
+    timeZone: str
+
+
+@dataclass
+class CalendarEvent:
+    id: str
+    summary: str
+    description: str
+    start: DateTime
+    end: DateTime
+
+
 class AICalendarProcessor:
 
     def __init__(
         self,
-        model_id: str,
+        model_id: str = "meta-llama/Llama-3.1-8B-Instruct",
         gen_params: GenerationParams = GenerationParams(),
         verbose: bool = False,
         **kwargs,
@@ -42,10 +58,9 @@ class AICalendarProcessor:
         self.tokenizer = None
         self.gen_params = gen_params
 
-    def predict(self, data):
-        pass
+        self.schema = {"type": "array", "items": CalendarEvent.schema()}
 
-    def predict_batch(self, data):
+    def predict(self, data):
         pass
 
     def _load_model(self):
@@ -59,25 +74,25 @@ class AICalendarProcessor:
         self.tokenizer = build_token_enforcer_tokenizer_data(self.model)
 
     def _create_prompt(self, data) -> str:
-        return "hi"
+        """"""
 
-    def _generate(self, data, json_schema: Optional[dict] = None) -> str:
+    def _generate(self, data) -> str:
         prompt = self._create_prompt(data)
 
         try:
             logits_processors = None
 
-            if json_schema:
+            if self.schema:
                 logits_processors = LogitsProcessorList(
                     [
                         build_llamacpp_logits_processor(
-                            self.tokenizer, JsonSchemaParser(json_schema)
+                            self.tokenizer, JsonSchemaParser(self.schema)
                         )
                     ]
                 )
 
                 prompt += (
-                    f"You MUST answer using the following JSON schema: {json_schema}"
+                    f"You MUST answer using the following JSON schema: {self.schema}"
                 )
 
             conversation = [
@@ -102,17 +117,6 @@ class AICalendarProcessor:
 
             generated_content = output["choices"][-1]["message"]["content"]
             logprobs = output["choices"][-1]["logprobs"]
-
-            confidence = math.exp(sum(logprobs) / len(logprobs)) if logprobs else None
-
-            if json_schema and "properties" in json_schema:
-                if "confidence" in json_schema["properties"]:
-                    content_json = json.loads(generated_content)
-                    content_json["confidence"] = (
-                        confidence
-                        if confidence is not None
-                        else content_json["confidence"]
-                    )
 
             return self._parse_output(generated_content)
 

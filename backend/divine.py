@@ -24,6 +24,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+app = FastAPI(title="Divine Calendar API", version="0.0.1")
+
 
 class Settings(BaseSettings):
     upload_folder: str = "uploads"
@@ -36,7 +38,10 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 
-@lrucache(maxsize=1)
+settings = Settings()
+
+
+@lru_cache(maxsize=1)
 def get_calendar_processor() -> AICalendarProcessor:
     return AICalendarProcessor()
 
@@ -73,8 +78,24 @@ def handle_exception(func: Callable) -> Callable:
 
     return wrapper
 
+
 @app.post("/process_calendar_events")
 @handle_exception
 async def process_calendar(
-    
-)
+    events: Annotated[list[dict], Body()],
+    processor: AICalendarProcessor = Depends(get_calendar_processor),
+) -> JSONResponse:
+    try:
+        output = processor.predict(events)
+        return JSONResponse(content=output)
+    except Exception as exc:
+        pass
+
+
+@app.get("/health")
+async def health_check() -> JSONResponse:
+    return JSONResponse(content={"status": "healthy"})
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host=settings.host, port=settings.port, reload=True)
