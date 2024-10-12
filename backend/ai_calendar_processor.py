@@ -59,7 +59,7 @@ class GenerationParams:
     top_k: int = (50,)
     top_p: float = (0.9,)
     context_tokens: int = 64000
-    max_tokens: int = 3000
+    max_tokens: int = 1000
     num_beams: int = (1,)
     do_sample: bool = (True,)
     no_repeat_ngram_size: int = (3,)
@@ -144,20 +144,37 @@ class AICalendarProcessor:
         self._load_model()
         self.schema = CalendarEvents.schema()
 
-    def predict(self, data):
+    def predict(
+        self, events: CalendarEvents, questionnaire: Optional[str] = None
+    ) -> str:
         """
         Predicts an optimized schedule based on the input data.
 
         Args:
-            data (str): The input data in JSON format.
+            events (CalendarEvents): The input data in CalendarEvents format.
+            questionnaire (Optional[str]): The user's energy levels throughout the day.
 
         Returns:
             str: The optimized schedule in JSON format.
         """
 
+        # If the questionnaire is provided, add it to the prompt
+        if questionnaire:
+            data = (
+                str(events)
+                + "\n Here are some details about the user: "
+                + str(questionnaire)
+            )
+        else:
+            data = str(events)
+
+        # Create the prompt based on the input data
         prompt = self._create_prompt(data)
+
+        # Generate the optimized schedule
         output = self._generate(data)
 
+        # Return the optimized schedule
         return output
 
     def _load_model(self):
@@ -271,7 +288,7 @@ class AICalendarProcessor:
             logits_processor=logits_processors,
             max_tokens=self.gen_params.max_tokens,
             temperature=0.3,
-            top_p=0.4,
+            top_p=0.9,
         )
         generated_content = output["choices"][-1]["message"]["content"]
 
