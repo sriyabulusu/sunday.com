@@ -72,3 +72,9 @@ def handle_exception(func: Callable) -> Callable:
             raise HTTPException(status_code=500, detail=str(exc))
 
     return wrapper
+
+@app.post("/process_calendar_events")
+@handle_exception
+async def process_calendar(
+    
+)
