@@ -146,6 +146,13 @@ input {
   font-family: 'Poppins', sans-serif;
 }
 
+textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'Poppins', sans-serif;
+}
+
 .submit-button {
   background-color: #6161ff;
   color: white;
