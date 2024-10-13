@@ -17,6 +17,7 @@ query engine.
 import os
 import hashlib
 import json
+import re
 
 from llama_index.core import (
     VectorStoreIndex,
@@ -238,32 +239,26 @@ class RAGAgent:
         with open("promptfile.json", "r") as file:
             prompts = json.load(file)
 
-        # Include chat history in the query
-        chat_history = self.memory.get()
-        query = (
-            prompts[agent_type]
-            + "\n Here is the chat history: "
-            + str(chat_history)
-            + "\n Here is the new query from the user: "
-            + query
-        )
+        query = prompts[agent_type] + "\n Here is the new query from the user: " + query
 
         response = query_engine.query(query)
         references = []
         for node in response.source_nodes:
-            r = Reference(
-                text=node.node.text[:200].lstrip("0123456789"),
-                page=node.node.metadata["page_label"],
-                title=node.node.metadata["file_name"],
-            )
+            r = {
+                "text": node.node.text[:200].lstrip("0123456789"),
+                "page": node.node.metadata["page_label"],
+                "title": node.node.metadata["file_name"],
+            }
+
             references.append(r)
 
-        self.memory.put(response)
         if stream:
             print("Response:", response.print_response_stream())
         else:
             return {
-                "response": str(response).lstrip("<<SYS>>"),
+                "response": re.sub(r"[\[\]\{\}<>]", "", str(response)[8:]).rstrip(
+                    "SYS"
+                ),
                 "references": references,
             }
 

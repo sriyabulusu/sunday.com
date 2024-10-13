@@ -190,7 +190,7 @@ async def process_calendar(
         JSONResponse: The processed events.
     """
 
-    global cal_ids, events, counter
+    global cal_ids, events, counter, last_date
 
     service = authenticate_google_calendar()
     if not cal_ids or cal_ids != calendar_ids or last_date != date:
@@ -223,6 +223,8 @@ async def process_calendar(
 async def query_char_bot(
     query: str = Body(...),
     agent: str = Body(...),
+    calendar_ids: list[str] = Body(...),
+    date: str = Body(...),
     processor: RAGAgent = Depends(get_chat_bot),
 ) -> JSONResponse:
     """
@@ -237,7 +239,24 @@ async def query_char_bot(
     Returns:
         JSONResponse: The response from the chatbot.
     """
-
+    service = authenticate_google_calendar()
+    query = (
+        "Only if the user asks about their schedule or you think you can give feedback based on their query, here is their schedule: "
+        + "\n"
+        + "".join(
+            str(
+                extract_calendar_events(
+                    service,
+                    calendar_ids=["bharadwaj76509@gmail.com"],
+                    start_date=date,
+                    end_date=date,
+                )
+            )
+        )
+        + "\nHere's the Query\n"
+        + query
+    )
+    print(query)
     if not agent in ["philosopher", "lawyer", "monk", "productivity"]:
         raise HTTPException(status_code=400, detail="Invalid agent type")
 

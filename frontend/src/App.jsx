@@ -258,7 +258,7 @@ const App = () => {
           <nav>
             <Link to="/about">About Us</Link>
             <Link to="/how-to">How To</Link>
-            <Link to="/confess">Confess</Link>
+            {/* <Link to="/confess">Confess</Link> */}
             <a href="https://github.com/sriyabulusu/sunday.com" target="_blank" rel="noopener noreferrer">
               <img src={`/github-mark.svg`} className="github-icon" alt="GitHub" />
             </a>
