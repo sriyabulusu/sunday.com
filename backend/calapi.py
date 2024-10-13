@@ -56,6 +56,7 @@ def extract_calendar_events(
         all_events = []
 
         for cid in calendar_ids:
+            print(f"time_min: {time_min}, time_max: {time_max}")
             events_result = (
                 service.events()
                 .list(

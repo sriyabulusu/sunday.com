@@ -10,6 +10,7 @@ cal_ids = []
 events = []
 service = None
 counter = 0
+date = None
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,9 +43,14 @@ def get_calendars(request: CalendarRequest):
 
     print(metadata)
 
-    if not cal_ids or cal_ids != request.calendar_ids:
+    if not cal_ids or cal_ids != request.calendar_ids or date != request.date:
         cal_ids = request.calendar_ids
-        events = extract_calendar_events(service, calendar_ids=request.calendar_ids)
+        events = extract_calendar_events(
+          service,
+          calendar_ids=request.calendar_ids,
+          start_date=request.date,
+          end_date=request.date
+        )
         counter += 1
 
     return {"events": events, "counter": counter}
