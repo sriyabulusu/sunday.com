@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 
@@ -7,104 +7,246 @@ import AboutUs from './AboutUs';
 import HowTo from './HowTo';
 import Advice from './Advice';
 import Confess from './Confess';
+import MainContent from './MainContent';
+
+//   <div className="app-content-mod">
+//     {!showResults ? (
+//       <>
+//         <section className='calendar-section'>
+//           <h2>Manage Calendar IDs</h2>
+//           <form onSubmit={handleAddCalendarId} className="calendar-id-form">
+//             <div className="input-wrapper">
+//               <input
+//                 type='text'
+//                 value={newCalendarId}
+//                 onChange={(e) => setNewCalendarId(e.target.value)}
+//                 placeholder='Enter calendar ID (e.g. divineschedulerai@gmail.com)'
+//                 className="calendar-id-input"
+//                 id="calendar-id-input"
+//                 name="calendar-id-input"
+//               />
+//               <button type='submit' className='add-button'>+</button>
+//             </div>
+//           </form>
+//           <div className="calendar-id-list">
+//             {calendarIds.map((id, index) => (
+//               <div key={index} className="calendar-id-item">
+//                 <span onClick={() => handleRemoveCalendarId(id)}>{id}</span>
+//               </div>
+//             ))}
+//           </div>
+//           {calendarIds.length > 0 && (
+//             <div className="calendar-container">
+//               <iframe
+//                 src={sourceString}
+//                 width='100%'
+//                 height='70%'
+//                 frameBorder='0'
+//                 scrolling='no'
+//                 title="Google Calendar"
+//               ></iframe>
+//             </div>
+//           )}
+//         </section>
+
+//         <section className='questionnaire-section'>
+//           <h2>Questionnaire</h2>
+//           <form onSubmit={handleSubmit}>
+//             <label htmlFor="day">
+//               Which day are you trying to optimize your schedule for?
+//               <input
+//                 type='date'
+//                 id="day"
+//                 name='day'
+//                 value={day}
+//                 onChange={(e) => setDay(e.target.value)}
+//                 required
+//               />
+//             </label>
+
+//             <label htmlFor="wakeUpTime">
+//               When do you wake up?
+//               <input
+//                 type='time'
+//                 id="wakeUpTime"
+//                 name='wakeUpTime'
+//                 value={wakeUpTime}
+//                 onChange={(e) => setWakeUpTime(e.target.value)}
+//                 required
+//               />
+//             </label>
+
+//             <label htmlFor="sleepTime">
+//               When do you sleep?
+//               <input
+//                 type='time'
+//                 id="sleepTime"
+//                 name='sleepTime'
+//                 value={sleepTime}
+//                 onChange={(e) => setSleepTime(e.target.value)}
+//                 required
+//               />
+//             </label>
+
+//             <label htmlFor="productivityHours">
+//               When are you most productive?
+//               <input
+//                 type='text'
+//                 id="productivityHours"
+//                 name='productivityHours'
+//                 placeholder='e.g., 9 AM - 12 PM'
+//                 value={productivityHours}
+//                 onChange={(e) => setProductivityHours(e.target.value)}
+//                 required
+//               />
+//             </label>
+
+//             <label htmlFor="text">
+//               What else do you need to get done?
+//               <textarea
+//                 id="text"
+//                 name='text'
+//                 value={text}
+//                 onChange={(e) => setText(e.target.value)}
+//                 required
+//               />
+//             </label>
+
+//             <button 
+//               type='submit' 
+//               className='submit-button'
+//               disabled={loading}
+//             >
+//               {loading ? (
+//                 <div className="loading-spinner"></div>
+//               ) : (
+//                 'Submit'
+//               )}
+//             </button>
+//           </form>
+//           {error && <p className="error-message">{error}</p>}
+//         </section>
+//       </>
+//     ) : (
+//       <div className="results-page">
+//         <section className='updated-calendar-section'>
+//           <h2>Updated Calendar</h2>
+//           <div className="calendar-container">
+//             <iframe
+//               src={sourceString}
+//               width='100%'
+//               height='70%'
+//               frameBorder='0'
+//               scrolling='no'
+//               title="Updated Google Calendar"
+//             ></iframe>
+//           </div>
+//         </section>
+//         <section className='thinking-section'>
+//           <h2>Thinking...</h2>
+//           <div className="results-container">
+//             <p>You got:</p>
+//             <div className="badge">
+//               <span className="badge-text">Lawyer</span>
+//             </div>
+//           </div>
+//         </section>
+//       </div>
+//     )}
+//   </div>
+// };
 
 const App = () => {
-  const [formData, setFormData] = useState({
-    day: '',
-    wakeUpTime: '',
-    sleepTime: '',
-    productivityHours: '',
-    text: ''
-  })
+  const [day, setDay] = useState('');
+  const [wakeUpTime, setWakeUpTime] = useState('');
+  const [sleepTime, setSleepTime] = useState('');
+  const [productivityHours, setProductivityHours] = useState('');
+  const [text, setText] = useState('');
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [calendarIds, setCalendarIds] = useState([])
-  const [newCalendarId, setNewCalendarId] = useState('')
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [calendarIds, setCalendarIds] = useState([]);
+  const [newCalendarId, setNewCalendarId] = useState('');
+  const [showResults, setShowResults] = useState(false);
+  const [results, setResults] = useState(null);
 
-  const handleChange = e => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+  const handleAddCalendarId = useCallback((e) => {
+    e.preventDefault();
+    if (newCalendarId && !calendarIds.includes(newCalendarId)) {
+      setCalendarIds(prevIds => [...prevIds, newCalendarId]);
+      setNewCalendarId('');
+    }
+  }, [newCalendarId, calendarIds]);
 
-  const handleSubmit = e => {
-    e.preventDefault()
-    console.log('Form submitted:', formData)
-    console.log('Calendars:', calendarIds)
+  const handleRemoveCalendarId = useCallback((id) => {
+    setCalendarIds(prevIds => prevIds.filter(calendarId => calendarId !== id));
+  }, []);
 
-    setLoading(true)
-    setError(null)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (calendarIds.length === 0 || !day || !wakeUpTime || !sleepTime || !productivityHours || !text) {
+      setError('Please add a calendar ID and fill out all fields in the questionnaire.');
+      return;
+    }
 
-    // post request to localhost:8000/prompt with the following body:
+    setLoading(true);
+    setError(null);
 
-    // const body = {
-    //   date: formData.day,
-    //   time_wake: formData.wakeUpTime,
-    //   time_sleep: formData.sleepTime,
-    //   most_productive: formData.productivityHours,
-    //   calendar_ids: calendarIds,
-    //   todo: formData.text
-    // }
+    const formData = {
+      day,
+      wakeUpTime,
+      sleepTime,
+      productivityHours,
+      text
+    };
+
     const prompt = `
-    Here are some things you need to know about me:
-    - I wake up at ${formData.wakeUpTime} and sleep at ${formData.sleepTime}.
-    - I am most productive during ${formData.productivityHours}.
-    - I want to accomplish the following on ${formData.day}: ${formData.text}.
-    `
+      Here are some things you need to know about me:
+      - I wake up at ${formData.wakeUpTime} and sleep at ${formData.sleepTime}.
+      - I am most productive during ${formData.productivityHours}.
+      - I want to accomplish the following on ${formData.day}: ${formData.text}.
+    `;
 
     const body = {
       questionnaire: prompt,
       calendar_ids: calendarIds,
-      date
+      date: formData.day
+    };
+
+    try {
+      const response = await fetch('http://localhost:8000/process_calendar_events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
+      }
+
+      const data = await response.json();
+      setResults(data);
+      setShowResults(true);
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Failed to submit form. Please check your network connection and try again.');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetch('http://localhost:8000/process_calendar_events', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to submit form')
-        }
-        return response.json()
-      })
-      .then(data => {
-        console.log('Success:', data)
-        setLoading(false)
-      })
-      .catch(error => {
-        console.error('Error:', error)
-        setError(error)
-        setLoading(false)
-      })
-  }
-
-  const handleAddCalendarId = e => {
-    e.preventDefault()
-    if (newCalendarId && !calendarIds.includes(newCalendarId)) {
-      setCalendarIds([...calendarIds, newCalendarId])
-      setNewCalendarId('')
-    }
-  }
-
-  const handleRemoveCalendarId = id => {
-    setCalendarIds(calendarIds.filter(calendarId => calendarId !== id))
-  }
-
-  const sourceString = `https://calendar.google.com/calendar/embed?height=600&wkst=2&ctz=America%2FLos_Angeles&bgcolor=%23ffffff&mode=WEEK&${calendarIds
+  const sourceString = `https://calendar.google.com/calendar/embed?height=600&wkst=2&ctz=America%2FLos_Angeles&bgcolor=%23f1f3ff&showTitle=0&showPrint=0&showTabs=0&showTz=0&mode=WEEK&${calendarIds
     .map(id => `src=${encodeURIComponent(id)}`)
-    .join('&')}&color=%23039BE5&color=%2333B679&color=%237CB342&color=%230B8043`
+    .join('&')}&color=%23039BE5&color=%2333B679&color=%237CB342&color=%230B8043`;
 
   return (
     <Router>
       <div className="app-container">
         <header className="app-header">
-          <div className="logo-container">
+        <div className="logo-container">
             <Link className="home-link" to="/">
               <img src="/sunday-logo.svg" className="logo-icon" alt="Sunday.com icon" />
               <span className="logo-text">
@@ -115,6 +257,7 @@ const App = () => {
           </div>
           <nav>
             <Link to="/about">About Us</Link>
+            <Link to="/how-to">How To</Link>
             <Link to="/confess">Confess</Link>
             <a href="https://github.com/sriyabulusu/sunday.com" target="_blank" rel="noopener noreferrer">
               <img src={`/github-mark.svg`} className="github-icon" alt="GitHub" />
@@ -124,117 +267,16 @@ const App = () => {
 
         <main className="app-content">
           <Routes>
-            <Route path="/" element={
-              <div className="app-content-mod">
-                <section className='calendar-section'>
-                  <h2>Manage Calendar IDs</h2>
-                  <form onSubmit={handleAddCalendarId}>
-                    <input
-                      type='text'
-                      value={newCalendarId}
-                      onChange={e => setNewCalendarId(e.target.value)}
-                      placeholder='Enter calendar ID'
-                    />
-                    <button type='submit' className='submit-button'>Add Calendar</button>
-                  </form>
-                  <ul>
-                    {calendarIds.map((id, index) => (
-                      <li key={index}>
-                        {id}
-                    <button onClick={() => handleRemoveCalendarId(id)}>
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {calendarIds.length > 0 && (
-                <iframe
-                  src={sourceString}
-                  width='800'
-                  height='600'
-                  frameBorder='0'
-                  scrolling='no'
-                  title='Google Calendar'
-                ></iframe>
-              )}
-            </section>
-    
-            <section className='questionnaire-section'>
-              <h2>Questionnaire</h2>
-              <form onSubmit={handleSubmit}>
-                <label>
-                  Which day are you trying to optimize your schedule for?
-                  <input
-                    type='date'
-                    name='day'
-                    value={formData.day}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-    
-                <label>
-                  When do you wake up?
-                  <input
-                    type='time'
-                    name='wakeUpTime'
-                    value={formData.wakeUpTime}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-    
-                <label>
-                  When do you sleep?
-                  <input
-                    type='time'
-                    name='sleepTime'
-                    value={formData.sleepTime}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-    
-                <label>
-                  When are you most productive?
-                  <input
-                    type='text'
-                    name='productivityHours'
-                    placeholder='e.g., 9 AM - 12 PM'
-                    value={formData.productivityHours}
-                    onChange={handleChange}
-                  />
-                </label>
-    
-                <label>
-                  What else do you need to get done?
-                  <textarea
-                    name='text'
-                    value={formData.text}
-                    onChange={handleChange}
-                  />
-                </label>
-    
-                <button type='submit' className='submit-button'>
-                  Submit
-                </button>
-              </form>
-            </section>
-
-            </div>} />
+            <Route path="/" element={<MainContent />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/how-to" element={<HowTo />} />
             <Route path="/advice" element={<Advice />} />
             <Route path="/confess" element={<Confess />} />
           </Routes>
         </main>
-
-        <footer className="app-footer">
-          <Link to="/how-to">How to Page</Link>
-        </footer>
       </div>
     </Router>
   );
 };
 
-export default App
+export default App;

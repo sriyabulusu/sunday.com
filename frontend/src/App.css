@@ -1,3 +1,4 @@
+/* fonts */
 @font-face {
   font-family: 'Poppins';
   src: url('./assets/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
@@ -26,6 +27,7 @@
   font-style: normal;
 }
 
+/* general styles */
 body {
   margin: 0;
   padding: 0;
@@ -39,6 +41,7 @@ body {
   min-height: 100vh;
 }
 
+/* header */
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -47,6 +50,7 @@ body {
   background-color: #ffffff;
 }
 
+/* logo */
 .logo-container {
   display: flex;
   align-items: center;
@@ -79,6 +83,7 @@ body {
   color: #333;
 }
 
+/* navigation */
 nav {
   display: flex;
   gap: 20px;
@@ -95,9 +100,10 @@ nav a {
   height: 24px;
 }
 
+/* main content */
 .app-content {
   flex-grow: 1;
-  display: flex; /* needed */
+  display: flex;
   padding: 40px;
   background-color: #f1f3ff;
   border-radius: 20px;
@@ -106,30 +112,119 @@ nav a {
 
 .app-content-mod {
   flex-grow: 1;
-  display: flex; /* needed */
+  display: flex;
   background-color: #f1f3ff;
   border-radius: 20px;
   margin: 0 20px 20px;
 }
 
-.calendar-section,
+/* calendar section */
+.calendar-section {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-right: 20px;
+}
+
+.calendar-section h2, .app-content-mod h2 {
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.calendar-id-form {
+  margin-bottom: 20px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 4px;
+  padding: 0;
+}
+
+.calendar-id-input {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.add-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #5bc77a;
+  color: white;
+  border: none;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.calendar-id-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.calendar-id-item {
+  background-color: #f0f0f0;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
+.calendar-id-item span {
+  cursor: pointer;
+  position: relative;
+}
+
+.calendar-id-item span:hover {
+  color: #888;
+}
+
+.calendar-id-item span:hover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 50%;
+  width: 100%;
+  height: 1px;
+  background-color: #888;
+}
+
+.calendar-container {
+  margin-top: 20px;
+  padding-top: 20px;
+  height: calc(70% - 20px);
+  overflow: hidden;
+}
+
+.calendar-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* questionnaire section */
 .questionnaire-section {
   flex: 1;
   background-color: #ffffff;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.calendar-section {
-  margin-right: 20px;
-}
-
-.calendar-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  scroll: true;
 }
 
 .questionnaire-section h2 {
@@ -139,31 +234,25 @@ nav a {
 }
 
 form {
-  display: flex; /* needed */
+  display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
 label {
-  display: flex; /* needed */
+  display: flex;
   flex-direction: column;
   gap: 5px;
   font-weight: normal;
   color: #333;
 }
 
-input {
+input, textarea {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-family: 'Poppins', sans-serif;
-}
-
-textarea {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
 }
 
 .submit-button {
@@ -185,29 +274,76 @@ textarea {
   background-color: #5656e4;
 }
 
-.app-footer {
-  text-align: right;
-  padding: 20px 40px;
+/* loading spinner */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid #6161ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.submit-button:disabled {
+  background-color: #a0a0ff;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+.results-page {
+  display: flex;
+  width: 100%;
+}
+
+.updated-calendar-section,
+.thinking-section {
+  flex: 1;
   background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 0 10px;
 }
 
-.app-footer a {
-  text-decoration: none;
-  color: #333;
-  font-weight: normal;
+.results-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+.badge {
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.badge-text {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* media queries */
 @media (max-width: 768px) {
   .app-content, .app-content-mod {
     flex-direction: column;
   }
   
   .calendar-section {
-    margin-right: 0;
-    margin-bottom: 20px;
-  }
-
-  .questionnaire-section {
     margin-right: 0;
     margin-bottom: 20px;
   }
