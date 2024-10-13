@@ -28,7 +28,6 @@ class CalendarRequest(BaseModel):
     time_sleep: str = None
     most_productive: str = None
     todo: str = None
-
 @app.post("/prompt/")
 def get_calendars(request: CalendarRequest):
     global cal_ids, events, service, counter
@@ -41,6 +40,7 @@ def get_calendars(request: CalendarRequest):
         "todo": request.todo,
     }
 
+
     if not cal_ids or cal_ids != request.calendar_ids or date != request.date:
         cal_ids = request.calendar_ids
         events = extract_calendar_events(
@@ -51,7 +51,14 @@ def get_calendars(request: CalendarRequest):
         )
         counter += 1
 
-    return {"events": events, "counter": counter}
+    prompt = f"""
+    Here are some things you need to know about me:
+    - I wake up at {metadata["time_wake"]} and sleep at {metadata["time_sleep"]}.
+    - I am most productive during {metadata["most_productive"]}.
+    - I want to accomplish the following on {metadata["date"]}: {metadata["todo"]}.
+    """
+
+    return
 
 if __name__ == "__main__":
     service = authenticate_google_calendar()
