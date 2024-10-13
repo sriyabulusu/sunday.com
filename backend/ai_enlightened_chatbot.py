@@ -62,7 +62,7 @@ class RAGAgent:
         self,
         llm_url: str = "https://huggingface.co/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
         directory: str = "../holy_texts",
-        agent_types: list[str] = ["monk"],
+        agent_types: list[str] = ["monk", "lawyer", "philosopher", "productivity"],
     ):
         # Load the LLaMA model
         self.llm = LlamaCPP(
