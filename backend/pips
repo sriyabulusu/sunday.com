@@ -1,0 +1,156 @@
+  381  pip install fastapi
+  995  vim piplz.py
+  996  python piplz.py
+  997  vim piplz.py
+  998  python piplz.py
+ 1621  pip install -r requirements.txt
+ 1623  pip install -r requirements.txt
+ 1691  pip3 install mistletoe
+ 1694  pip3 install mistletoe
+ 1695  python3 -m pip install mistletoe
+ 1696  .venv/bin/pip3 install mistletoe
+ 1697  python3 -m pip install mistletoe
+ 1698  pip install mistletoe
+ 1700  pip install mistletoe
+ 1702  pip install mistletoe
+ 1704  pip3 install mistletoe
+ 1705  python3 -m venv path/to/venv\n    source path/to/venv/bin/activate\n    python3 -m pip install xyz
+ 1706  python3 -m pip install mistletoe
+ 1707  python3 -m venv venv\n    source venv/bin/activate\n    python3 -m pip install xyz
+ 1708  python3 -m venv venv\n    source venv/bin/activate\n    python3 -m pip install mistletoe
+ 1712  python3 -m pip install pyinstaller
+ 1717  python3 -m pip freeze 
+ 1718  python3 -m pip freeze > requirements.txt
+ 1719  python3 -m pip install -r requirements.txt
+ 2017  pip3 install -r requirements.txt
+ 2190  pip install selenium
+ 2192  pip install selenium
+ 2194  pip install beautifulsoup4
+ 2887  python -m pip install Django
+ 2947  pip install djangorestframework
+ 2960  pip install psycopg2
+ 2961  pip install django
+ 2962  pip install python-dotenv
+ 2966  pip install django djangorestframework psycopg2
+ 2968  pip install psycopg2-binary
+ 3040  pip installl -r requirements.txt
+ 3041  pip install -r requirements.txt
+ 3042  pip install drf-spectacular
+ 3054  pip install psycopg2-binary
+ 3082  pip freeze > requirements.txt
+ 3124  pip install drf-spectacular
+ 3264  pip install -r requirements.txt
+ 3266  pip install rest_framework_api_key
+ 3267  pip install -r requirements.txt
+ 3268  pip install djangorestframework-api-key==2.*
+ 3269  pip install -r requirements.txt
+ 3271  pip install -r requirements.txt
+ 3369  pip install -r requirements.txt
+ 3371  pip install -r requirements.txt
+ 3374  pip install -r requirements.txt
+ 3696  pip install -r requirements.txt
+ 3697  pip install -r ../../requirements.txt
+ 3698  pip install -r ../requirements.txt
+ 3700  pip install -r requirements.txt
+ 3701  pip install -r ../requirements.txt
+ 3703  pip install -r ../requirements.txt
+ 4151  pip install -r ../requirements.txt
+ 4153  pip install -r /requirements.txt
+ 4154  pip install -r requirements.txt
+ 4155  python3.12 -m pip install --upgrade pip
+ 4157  python3.12 -m pip install --upgrade pip
+ 4254  pip install tabulate
+ 4278  pip install numpy
+ 4289  pip install -r requirements.txt
+ 4308  pip install tensorflow-macos\npip install tensorflow-metal
+ 4310  pip install --upgrade pip'
+ 4311  pip install --upgrade pip
+ 4312  pip uninstall tensorflow tensorflow-macos tensorflow-metal
+ 4313  pip install tensorflow-macos
+ 4314  pip install tensorflow-metal
+ 4315  python -m pip install tensorflow-metal
+ 4316  python -m pip install tensorflow\n
+ 4319  pip install numpy
+ 4320  pip install numpy pandas matplotlib scikit-learn
+ 4331  pip freeze > requirements.txt
+ 4332  pip install tqdm
+ 4333  pip freeze > requirements.txt
+ 4335  pip freeze > requirements.txt
+ 4364  pip install bs4
+ 4366  pip install bs4
+ 4368  pip install numpy pandas matplotlib scikit-learn
+ 4459  pip install pyo
+ 4463  pip install pyo
+ 4464  pip install soundgenerator\n
+ 4469  pip install scipy\n
+ 4851  pip install -r requirements.txt
+ 4855  pip install -r requirements.txt
+ 4856  python3 -m pip install -r requirements.txt
+ 4860  pip install -r requirements.txt
+ 5229  pip install -r requirements.txt
+ 5438  pip install matplotlib
+ 5439  brew install pipx
+ 5440  pipx install matplotlib
+ 5446  pip install matplotlib
+ 5663  pipx install tabulate
+ 5665  pipx help
+ 5666  pipx --help
+ 5667  pipx run --help
+ 5668  pipx run parse.py
+ 5671  pip install tabulate
+ 5925  pip install websockets
+ 5928  pip install aiohttp websockets
+ 5931  pip install -r requirements.txt
+ 5932  pip install --upgrade pip
+ 5933  pip install -r requirements.txt
+ 5934  pip install jinja2
+ 5994  pip install -r requirements.txt
+ 5995  pip
+ 5996  pip install -r requirements.txt
+ 5999  pip install -r requirements.txt
+ 6001  pip install -r requirements.txt
+ 6007  pip install -r requirements.txt
+ 6087  pip install -r requirements.txt
+ 6115  pip install aiohttp websockets
+ 6123  pip install aiohttp cryptography\n
+ 6124  pip freeze > requirements.txt
+ 6141  pip install aiohttp cryptography\n
+ 6315  pip install pytest
+ 6317  pip install pytest
+ 6488  pip install django-health-check
+ 6504  pip install pip install python-json-logger
+ 6505  pip install python-json-logger
+ 6509  pip install python-json-logger
+ 6513  pip install python-json-logger
+ 6997  pip install anthropic
+ 7003  pip install anthropic
+ 7007  pip install anthropic
+ 7009  pip install anthropic
+ 7016  pip install anthropic
+ 7019  pip install anthropic
+ 7023  pip install anthropic
+ 7025  pip install fastapi
+ 7026  pip install uvicorn
+ 7027  pip freeze > server/requirements.txt
+ 7037  pip install sqlalchemy
+ 7040  pip install fastapi sqlalchemy asyncpg psycopg2 alembic\n
+ 7083  pip install python-multipart
+ 7123  pip freeze > server/requirements.txt
+ 7124  pip freeze > requirements.txt
+ 7335  pip install -r server/requirements.txt
+ 7643  pip install -r requirements.txt
+ 7645  pip install -r requirements.txt
+ 7653  pipx install sendgrid
+ 7660  pip install sendgrid
+ 7686  pip install sendgrid
+ 7690  pip install sendgrid
+ 8078* pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+ 8082* pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+ 8109* pip install tabulate 
+ 8111* pip install json
+ 8135* echo "pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib" | pbcopy
+ 8174* pip install fastapi
+ 8175* pip install aiohttp
+ 8176* pip install aiofiles
+ 8177* pip install uvicorn
+ 8179* pip install pydantic-settings

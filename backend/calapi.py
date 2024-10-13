@@ -1,11 +1,13 @@
 import datetime
 import json
 import os
+import base64
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
 
 DEFAULT_CALENDAR_ID = "54d33b5da85ac849627cf6d0bf1a7d09e5eb9afe42d6be24b3c5e9ade279cc35@group.calendar.google.com"
 SCOPES = [
@@ -13,6 +15,11 @@ SCOPES = [
     "https://www.googleapis.com/auth/calendar.events",
 ]
 
+def encode_calendar_id(calendarId):
+    calendarId_bytes = calendarId.encode('utf-8')
+    cid_base64 = base64.b64encode(calendarId_bytes)
+    cid = cid_base64.decode().rstrip('=')
+    return cid
 
 def authenticate_google_calendar():
     creds = None
