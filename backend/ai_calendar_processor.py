@@ -34,6 +34,9 @@ from lmformatenforcer.integrations.llamacpp import (
     build_llamacpp_logits_processor,
     build_token_enforcer_tokenizer_data,
 )
+import anthropic
+from dotenv import load_dotenv
+import os
 
 
 @dataclass
@@ -144,6 +147,31 @@ class AICalendarProcessor:
         self._load_model()
         self.schema = CalendarEvents.schema()
 
+    def predict_claude(self, prompt):
+        load_dotenv()
+
+        # Send request to Claude API
+        response = anthropic.Anthropic().messages.create(
+            model="claude-3-5-sonnet-20240620",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}],  # Add prompt herepost(
+        )
+
+        content = json.loads(response.json())["content"][-1]["text"]
+
+        # Extract the JSON part of the response
+        try:
+            json_start = content.index("{")
+            json_end = content.rindex("}") + 1
+            json_content = content[json_start:json_end]
+            optimized_data = json.loads(json_content)
+        except (ValueError, json.JSONDecodeError):
+            print("Failed to parse JSON from Claude's response. Raw response:")
+            print(content)
+            return None
+
+        return optimized_data
+
     def predict(
         self, events: CalendarEvents, questionnaire: Optional[str] = None
     ) -> str:
@@ -171,11 +199,13 @@ class AICalendarProcessor:
         # Create the prompt based on the input data
         prompt = self._create_prompt(data)
 
-        # Generate the optimized schedule
-        output = self._generate(data)
+        return self.predict_claude(prompt)["events"]
 
-        # Return the optimized schedule
-        return output
+        # # Generate the optimized schedule
+        # output = self._generate(data)
+
+        # # Return the optimized schedule
+        # return output
 
     def _load_model(self):
         """
@@ -201,27 +231,49 @@ class AICalendarProcessor:
             str: The prompt in JSON format.
         """
         return f"""
-            You are a schedule optimization assistant. Your task is to rearrange the given calendar events within their scheduled day to maximize productivity. Follow these guidelines:
+                You are an intelligent schedule optimization assistant. Your task is to take a user's existing calendar events and rearrange them within their scheduled days to maximize productivity based on the user's energy levels and the nature of each task. Here are your key responsibilities and constraints:
 
-            1. Keep events on their original day.
-            2. Maintain the original duration of each event.
-            3. Avoid overlaps in the schedule.
-            4. Assume higher energy in the morning, lower after lunch, and a slight increase in late afternoon.
-            5. Place high-focus tasks during high-energy periods.
-            6. Group similar tasks when beneficial.
-            7. Allow short breaks between intense tasks.
+                1. Input Processing:
+                - You will receive a list of dictionaries, each representing a calendar event.
+                - Each event will include, at minimum: event ID, title, start time, end time, and day.
+                - You will also receive information about the user's energy levels throughout the day.
 
-            Analyze the following events and provide an optimized schedule:
+                2. Event Analysis:
+                - Analyze each event to determine its nature (e.g., high-focus work, low-energy tasks, meetings).
+                - Consider the duration of each event, which must remain unchanged in your optimization.
 
-            {data}
+                3. Energy Level Consideration:
+                - Use the provided information about the user's energy levels throughout the day.
+                - Match high-energy periods with high-focus tasks, and low-energy periods with less demanding activities.
 
-            For each event in your optimized schedule, include:
-            - Event ID
-            - New start time
-            - New end time
+                4. Scheduling Constraints:
+                - Do not change the day of any event. Events must remain on their original scheduled day.
+                - Maintain the original duration of each event. A 2-hour event should remain 2 hours long.
+                - Ensure there are no overlaps in the optimized schedule.
+                - Consider standard working hours unless otherwise specified.
 
-            
-        """
+                5. Optimization Strategy:
+                - Prioritize important or high-focus tasks during the user's peak energy times.
+                - Group similar tasks together when beneficial (e.g., back-to-back meetings).
+                - Allow for short breaks between intense focus periods.
+                - Consider the flow of the day, avoiding rapid switches between very different types of tasks.
+
+                6. Output Format:
+                - Provide the optimized schedule in a specified JSON format (details to be provided separately).
+                - Include the event ID, new start time, and new end time for each rescheduled event.
+                
+                7. Handling Special Cases:
+                - If certain events are marked as unmovable, respect those constraints.
+                - If there are conflicting objectives, prioritize based on event importance if specified.
+
+                Remember, your goal is to create an optimized daily schedule that respects the user's existing commitments while maximizing their productivity based on their energy levels. 
+                Always maintain the original day and duration of each event, and focus on rearranging events within each day for optimal performance.
+                
+                Here are the events in GCal API form:
+                {data}
+                
+                You MUST answer using the following JSON schema: {self.schema}
+            """
 
     def _generate(self, data) -> str:
         """
@@ -259,7 +311,7 @@ class AICalendarProcessor:
             conversation,
             logits_processor=logits_processors,
             max_tokens=self.gen_params.max_tokens,
-            temperature=0.3,
+            temperature=0.8,
             top_p=0.9,
         )
         generated_content = output["choices"][-1]["message"]["content"]
