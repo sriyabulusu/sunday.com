@@ -34,6 +34,7 @@ from llama_index.llms.llama_cpp.llama_utils import (
     completion_to_prompt,
 )
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.core.memory import ChatMemoryBuffer
 from transformers import AutoTokenizer
 
 
@@ -52,7 +53,7 @@ class RAGAgent:
         self,
         llm_url: str = "https://huggingface.co/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
         directory: str = "../holy_texts",
-        agent_types: list[str] = ["philosopher"],
+        agent_types: list[str] = ["monk", "philosopher", "lawyer", "productivity"],
     ):
         # Load the LLaMA model
         self.llm = LlamaCPP(
@@ -91,6 +92,7 @@ class RAGAgent:
                 previous_hashes,
                 f"storage/{agent}",
             )
+        self.memory = ChatMemoryBuffer.from_defaults(token_limit=1500)
 
     def _get_document_hashes(self, directory):
         """
@@ -230,7 +232,16 @@ class RAGAgent:
         with open("promptfile.json", "r") as file:
             prompts = json.load(file)
 
-        query = prompts[agent_type] + "\n Here is the query from the user: " + query
+        # Include chat history in the query
+        chat_history = self.memory.get_chat_history()
+        query = (
+            prompts[agent_type]
+            + "\n Here is the chat history: "
+            + str(chat_history)
+            + "\n Here is the new query from the user: "
+            + query
+        )
+
         response = query_engine.query(query)
 
         print("Response:", response.print_response_stream())
