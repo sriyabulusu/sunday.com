@@ -41,11 +41,10 @@ def authenticate_google_calendar():
 
 
 def extract_calendar_events(
-    calendar_ids=[DEFAULT_CALENDAR_ID], start_date=None, end_date=None
+    service, calendar_ids=[DEFAULT_CALENDAR_ID], start_date=None, end_date=None
 ) -> list:
 
     try:
-        service = authenticate_google_calendar()
         time_min = (
             f"{start_date}T00:00:00Z"
             if start_date

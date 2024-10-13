@@ -26,6 +26,11 @@ const App = () => {
     e.preventDefault()
     console.log('Form submitted:', formData)
     console.log('Calendars:', calendarIds)
+
+    const body = {
+      ...formData,
+      calendarIds
+    }
   }
 
   const handleAddCalendarId = e => {

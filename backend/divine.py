@@ -11,10 +11,8 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.background import BackgroundTask
 from pydantic_settings import BaseSettings
-from PIL import Image
 import uvicorn
 from asyncio import wrap_future
-import requests
 import json
 
 from ai_calendar_processor import AICalendarProcessor
