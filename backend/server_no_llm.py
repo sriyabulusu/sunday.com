@@ -41,8 +41,6 @@ def get_calendars(request: CalendarRequest):
         "todo": request.todo,
     }
 
-    print(metadata)
-
     if not cal_ids or cal_ids != request.calendar_ids or date != request.date:
         cal_ids = request.calendar_ids
         events = extract_calendar_events(
