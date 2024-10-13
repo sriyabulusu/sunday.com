@@ -56,7 +56,8 @@ const App = () => {
 
     const body = {
       questionnaire: prompt,
-      calendar_ids: calendarIds
+      calendar_ids: calendarIds,
+      date
     }
 
     fetch('http://localhost:8000/process_calendar_events', {
