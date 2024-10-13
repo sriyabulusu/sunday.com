@@ -81,10 +81,11 @@ def handle_exception(func: Callable) -> Callable:
 @handle_exception
 async def process_calendar(
     events: Annotated[list[dict], Body()],
+    questionnaire: str = None,
     processor: AICalendarProcessor = Depends(get_calendar_processor),
 ) -> JSONResponse:
     try:
-        output = processor.predict(events)
+        output = processor.predict(events, questionnaire=questionnaire)
         return JSONResponse(content=output)
     except Exception as exc:
         pass

@@ -22,7 +22,6 @@ and generating the output.
 
 import json
 import logging
-import math
 
 from typing import Optional
 from dataclasses import dataclass
@@ -96,6 +95,7 @@ class CalendarEvent(BaseModel):
     """
 
     id: str
+    calendar_id: str
     summary: str
     description: str
     start: DateTime
@@ -201,55 +201,27 @@ class AICalendarProcessor:
             str: The prompt in JSON format.
         """
         return f"""
-                You are an intelligent schedule optimization assistant. Your task is to take a user's existing calendar events and rearrange them within their scheduled days to maximize productivity based on the user's energy levels and the nature of each task. Here are your key responsibilities and constraints:
+            You are a schedule optimization assistant. Your task is to rearrange the given calendar events within their scheduled day to maximize productivity. Follow these guidelines:
 
-                1. Input Processing:
-                - You will receive a list of dictionaries, each representing a calendar event.
-                - Each event will include, at minimum: event ID, title, start time, end time, and day.
-                - You will also receive information about the user's energy levels throughout the day.
+            1. Keep events on their original day.
+            2. Maintain the original duration of each event.
+            3. Avoid overlaps in the schedule.
+            4. Assume higher energy in the morning, lower after lunch, and a slight increase in late afternoon.
+            5. Place high-focus tasks during high-energy periods.
+            6. Group similar tasks when beneficial.
+            7. Allow short breaks between intense tasks.
 
-                2. Event Analysis:
-                - Analyze each event to determine its nature (e.g., high-focus work, low-energy tasks, meetings).
-                - Consider the duration of each event, which must remain unchanged in your optimization.
+            Analyze the following events and provide an optimized schedule:
 
-                3. Energy Level Consideration:
-                - Use the provided information about the user's energy levels throughout the day.
-                - Match high-energy periods with high-focus tasks, and low-energy periods with less demanding activities.
+            {data}
 
-                4. Scheduling Constraints:
-                - Do not change the day of any event. Events must remain on their original scheduled day.
-                - Maintain the original duration of each event. A 2-hour event should remain 2 hours long.
-                - Ensure there are no overlaps in the optimized schedule.
-                - Consider standard working hours unless otherwise specified.
+            For each event in your optimized schedule, include:
+            - Event ID
+            - New start time
+            - New end time
 
-                5. Optimization Strategy:
-                - Prioritize important or high-focus tasks during the user's peak energy times.
-                - Group similar tasks together when beneficial (e.g., back-to-back meetings).
-                - Allow for short breaks between intense focus periods.
-                - Consider the flow of the day, avoiding rapid switches between very different types of tasks.
-
-                6. Output Format:
-                - Provide the optimized schedule in a specified JSON format (details to be provided separately).
-                - Include the event ID, new start time, and new end time for each rescheduled event.
-
-                7. Explanation and Justification:
-                - Offer a brief explanation of your major scheduling decisions.
-                - Highlight any significant improvements in the optimized schedule.
-
-                8. Handling Special Cases:
-                - If certain events are marked as unmovable, respect those constraints.
-                - If there are conflicting objectives, prioritize based on event importance if specified.
-
-                9. Iterative Improvement:
-                - Be prepared to make further adjustments based on user feedback.
-                - Suggest alternative schedules if the user is not satisfied with the initial optimization.
-
-                Remember, your goal is to create an optimized daily schedule that respects the user's existing commitments while maximizing their productivity based on their energy levels. 
-                Always maintain the original day and duration of each event, and focus on rearranging events within each day for optimal performance.
-                
-                Here are the events in GCal API form:
-                {data}
-                """
+            
+        """
 
     def _generate(self, data) -> str:
         """
