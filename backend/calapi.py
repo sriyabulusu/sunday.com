@@ -23,6 +23,7 @@ def encode_calendar_id(calendarId):
 
 def authenticate_google_calendar():
     creds = None
+    flow = None
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
     # If there are no (valid) credentials available, let the user log in.
@@ -31,7 +32,7 @@ def authenticate_google_calendar():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-        creds = flow.run_local_server(port=0)
+            creds = flow.run_local_server(port=0)
     # Save the credentials for the next run
     with open("token.json", "w") as token:
         token.write(creds.to_json())

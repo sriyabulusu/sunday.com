@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from calapi import authenticate_google_calendar, extract_calendar_events
+from fastapi.middleware.cors import CORSMiddleware
+
 import uvicorn
 
 app = FastAPI()
@@ -8,6 +10,14 @@ cal_ids = []
 events = []
 service = None
 counter = 0
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins, replace with specific origins if needed
+    allow_credentials=True,
+    allow_methods=["*"],   # Allows all methods (GET, POST, etc.), replace with specific methods if needed
+    allow_headers=["*"],   # Allows all headers, replace with specific headers if needed
+)
 
 # Define the Pydantic model to validate the request body
 class CalendarRequest(BaseModel):

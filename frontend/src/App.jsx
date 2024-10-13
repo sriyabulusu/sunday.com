@@ -27,10 +27,51 @@ const App = () => {
     console.log('Form submitted:', formData)
     console.log('Calendars:', calendarIds)
 
-    const body = {
-      ...formData,
-      calendarIds
+    setLoading(true)
+    setError(null)
+
+    // post request to localhost:8000/prompt with the following body:
+    /**
+     * metadata = {
+        "date": request.date,
+        "time_wake": request.time_wake,
+        "time_sleep": request.time_sleep,
+        "most_productive": request.most_productive,
+        "todo": request.todo,
     }
+     */
+
+    const body = {
+      date: formData.day,
+      time_wake: formData.wakeUpTime,
+      time_sleep: formData.sleepTime,
+      most_productive: formData.productivityHours,
+      calendar_ids: calendarIds,
+      todo: formData.text
+    }
+
+    fetch('http://localhost:8000/prompt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to submit form')
+        }
+        return response.json()
+      })
+      .then(data => {
+        console.log('Success:', data)
+        setLoading(false)
+      })
+      .catch(error => {
+        console.error('Error:', error)
+        setError(error)
+        setLoading(false)
+      })
   }
 
   const handleAddCalendarId = e => {
