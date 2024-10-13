@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
 import FakeStreaming from './FakeStreaming';
+import ImageUpload from './ImageUpload';
 
 const HowTo = ({ formData, handleChange, handleSubmit }) => {
 
@@ -20,6 +21,7 @@ const HowTo = ({ formData, handleChange, handleSubmit }) => {
   `
   return (
     <div>
+      <ImageUpload />
       <FakeStreaming text={message} />
     </div>
   );

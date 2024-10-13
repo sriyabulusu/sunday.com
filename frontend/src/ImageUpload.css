@@ -1,0 +1,21 @@
+.image-upload-container {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.image-explanation {
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}
+
+.loading {
+  margin-top: 10px;
+}
