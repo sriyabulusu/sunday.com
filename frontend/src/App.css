@@ -358,7 +358,8 @@ input, textarea {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 600px; /* Fixed height */
+  max-height: 80vh; /* Maximum height relative to viewport */
 }
 
 .chatbot-section h2 {
@@ -390,6 +391,7 @@ input, textarea {
   border-radius: 8px;
   display: flex;
   flex-direction: column;
+  max-height: calc(100% - 140px); /* Adjust based on other elements' heights */
 }
 
 .message {
@@ -416,6 +418,7 @@ input, textarea {
 .chat-input {
   display: flex;
   gap: 10px;
+  margin-top: auto; /* Push to bottom */
 }
 
 .chat-input input {
@@ -441,4 +444,177 @@ input, textarea {
 
 .chat-input button:hover {
   background-color: #5656e4;
+}
+
+.results-page {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 150px); 
+  min-height: 600px; 
+}
+
+.updated-calendar-section,
+.chatbot-section {
+  flex: 1;
+  margin: 0 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.updated-calendar-section h2,
+.chatbot-section h2 {
+  margin-bottom: 15px;
+}
+
+.calendar-container,
+.chat-messages {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+.calendar-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.agent-selector {
+  margin-bottom: 15px;
+}
+
+.chat-input {
+  margin-top: 15px;
+}
+
+
+.chat-messages {
+  max-height: calc(100%); 
+}
+
+.message.bot {
+  padding: 15px;
+}
+
+.message.bot h1,
+.message.bot h2,
+.message.bot h3,
+.message.bot h4,
+.message.bot h5,
+.message.bot h6 {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.message.bot h1 { font-size: 1.4em; }
+.message.bot h2 { font-size: 1.3em; }
+.message.bot h3 { font-size: 1.2em; }
+.message.bot h4 { font-size: 1.1em; }
+.message.bot h5, .message.bot h6 { font-size: 1em; }
+
+.message.bot p {
+  margin-bottom: 10px;
+}
+
+.message.bot ul, .message.bot ol {
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.message.bot li {
+  margin-bottom: 5px;
+}
+
+.message.bot code {
+  background-color: #f0f0f0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.message.bot pre {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.message.bot blockquote {
+  border-left: 3px solid #ccc;
+  margin-left: 0;
+  padding-left: 10px;
+  color: #666;
+}
+
+.message.bot a {
+  color: #6161ff;
+  text-decoration: none;
+}
+
+.message.bot a:hover {
+  text-decoration: underline;
+}
+
+.calendar-container {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  height: calc(100% - 60px); /* Adjust based on your header height */
+  margin-top: 15px;
+}
+
+.calendar-container iframe {
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* Additional styles to make the calendar more consistent with your app's design */
+.results-page .updated-calendar-section {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.results-page .updated-calendar-section h2 {
+  color: #333;
+  font-size: 1.5em;
+  margin-bottom: 15px;
+}
+
+/* If you want to style the calendar's internal elements (note: this may not work for all elements due to iframe restrictions) */
+.calendar-container iframe {
+  filter: hue-rotate(10deg) saturate(70%) brightness(105%);
+}
+
+.references-container {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.references-container h4 {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.reference-item {
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+  font-size: 0.85em;
+}
+
+.reference-text {
+  margin-bottom: 4px;
+}
+
+.reference-metadata {
+  font-size: 0.8em;
+  color: #777;
 }

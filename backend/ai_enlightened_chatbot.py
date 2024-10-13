@@ -17,6 +17,7 @@ query engine.
 import os
 import hashlib
 import json
+import re
 
 from llama_index.core import (
     VectorStoreIndex,
@@ -61,7 +62,7 @@ class RAGAgent:
         self,
         llm_url: str = "https://huggingface.co/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
         directory: str = "../holy_texts",
-        agent_types: list[str] = ["monk"],
+        agent_types: list[str] = ["monk", "lawyer", "philosopher", "productivity"],
     ):
         # Load the LLaMA model
         self.llm = LlamaCPP(
@@ -238,32 +239,26 @@ class RAGAgent:
         with open("promptfile.json", "r") as file:
             prompts = json.load(file)
 
-        # Include chat history in the query
-        chat_history = self.memory.get()
-        query = (
-            prompts[agent_type]
-            + "\n Here is the chat history: "
-            + str(chat_history)
-            + "\n Here is the new query from the user: "
-            + query
-        )
+        query = prompts[agent_type] + "\n Here is the new query from the user: " + query
 
         response = query_engine.query(query)
         references = []
         for node in response.source_nodes:
-            r = Reference(
-                text=node.node.text[:200].lstrip("0123456789"),
-                page=node.node.metadata["page_label"],
-                title=node.node.metadata["file_name"],
-            )
+            r = {
+                "text": node.node.text[:200].lstrip("0123456789"),
+                "page": node.node.metadata["page_label"],
+                "title": node.node.metadata["file_name"],
+            }
+
             references.append(r)
 
-        self.memory.put(response)
         if stream:
             print("Response:", response.print_response_stream())
         else:
             return {
-                "response": str(response).lstrip("<<SYS>>"),
+                "response": re.sub(r"[\[\]\{\}<>]", "", str(response)[8:]).rstrip(
+                    "SYS"
+                ),
                 "references": references,
             }
 
