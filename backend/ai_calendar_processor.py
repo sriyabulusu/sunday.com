@@ -93,16 +93,16 @@ class CalendarEvent(BaseModel):
         id (str): The ID of the event.
         summary (str): The title of the event.
         description (str): The description of the event.
-        start (DateTime): The start time of the event.
-        end (DateTime): The end time of the event.
+        start (DateTime): The start time of the event in YYYY-MM-DDTHH:MM:SSZ format.
+        end (DateTime): The end time of the event in  in YYYY-MM-DDTHH:MM:SSZ format.
     """
 
     id: str
     calendar_id: str
     summary: str
     description: str
-    start: DateTime
-    end: DateTime
+    start: str
+    end: str
 
 
 @dataclass

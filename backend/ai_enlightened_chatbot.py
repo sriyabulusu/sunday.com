@@ -36,6 +36,14 @@ from llama_index.llms.llama_cpp.llama_utils import (
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.memory import ChatMemoryBuffer
 from transformers import AutoTokenizer
+from dataclasses import dataclass
+
+
+@dataclass
+class Reference:
+    text: str
+    page: int
+    title: str
 
 
 class RAGAgent:
@@ -53,7 +61,7 @@ class RAGAgent:
         self,
         llm_url: str = "https://huggingface.co/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
         directory: str = "../holy_texts",
-        agent_types: list[str] = ["monk", "philosopher", "lawyer", "productivity"],
+        agent_types: list[str] = ["monk"],
     ):
         # Load the LLaMA model
         self.llm = LlamaCPP(
@@ -64,7 +72,9 @@ class RAGAgent:
             model_kwargs={"n_gpu_layers": -1},  # Set to at least 1 to use GPU
             messages_to_prompt=messages_to_prompt,
             completion_to_prompt=completion_to_prompt,
-            generate_kwargs={"stop": ["/SYS", "[/INST]", "</INST>"]},  # Add this line
+            generate_kwargs={
+                "stop": ["/SYS", "[/INST]", "</INST>", "[[INST]]"]
+            },  # Add this line
             verbose=True,
         )
         Settings.llm = self.llm
@@ -201,11 +211,7 @@ class RAGAgent:
 
         return index
 
-    def query(
-        self,
-        query: str,
-        agent_type: str,
-    ) -> str:
+    def query(self, query: str, agent_type: str, stream: bool = False) -> str:
         """
         Query the index with user input and generate text based on the output.
 
@@ -226,14 +232,14 @@ class RAGAgent:
 
         # Create the query engine
         query_engine = RetrieverQueryEngine.from_args(
-            streaming=True, retriever=vector_retriever, verbose=True
+            streaming=stream, retriever=vector_retriever, verbose=False
         )
 
         with open("promptfile.json", "r") as file:
             prompts = json.load(file)
 
         # Include chat history in the query
-        chat_history = self.memory.get_chat_history()
+        chat_history = self.memory.get()
         query = (
             prompts[agent_type]
             + "\n Here is the chat history: "
@@ -243,14 +249,23 @@ class RAGAgent:
         )
 
         response = query_engine.query(query)
-
-        print("Response:", response.print_response_stream())
-
-        # Extract document names from source nodes
-        document_names = []
+        references = []
         for node in response.source_nodes:
-            if "file_name" in node.node.metadata:
-                document_names.append(node.node.metadata["file_name"])
+            r = Reference(
+                text=node.node.text[:200].lstrip("0123456789"),
+                page=node.node.metadata["page_label"],
+                title=node.node.metadata["file_name"],
+            )
+            references.append(r)
+
+        self.memory.put(response)
+        if stream:
+            print("Response:", response.print_response_stream())
+        else:
+            return {
+                "response": str(response).lstrip("<<SYS>>"),
+                "references": references,
+            }
 
         print("\n" + "=" * 60 + "\n")
         print("References:")

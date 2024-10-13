@@ -17,6 +17,37 @@ const MainContent = () => {
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState(null);
 
+    // Add new state variables
+  const [messages, setMessages] = useState([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [selectedAgent, setSelectedAgent] = useState('lawyer');
+
+  // Add a function to handle sending messages
+  const handleSendMessage = async () => {
+    if (currentMessage.trim() === '') return;
+
+    const newMessage = { text: currentMessage, sender: 'user' };
+    setMessages(prevMessages => [...prevMessages, newMessage]);
+    setCurrentMessage('');
+
+    try {
+      const response = await fetch('http://localhost:8000/query_chat_bot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: currentMessage, agent: selectedAgent }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(prevMessages => [...prevMessages, { text: data.response, sender: 'bot' }]);
+      } else {
+        console.error('Failed to get response from chatbot');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   // Handlers
   const handleAddCalendarId = useCallback((e) => {
     e.preventDefault();
@@ -219,13 +250,32 @@ const MainContent = () => {
               ></iframe>
             </div>
           </section>
-          <section className="thinking-section">
-            <h2>Thinking...</h2>
-            <div className="results-container">
-              <p>You got:</p>
-              <div className="badge">
-                <span className="badge-text">Lawyer</span>
-              </div>
+          <section className="chatbot-section">
+            <h2>Talk to an Advisor!</h2>
+            <div className="agent-selector">
+              <select value={selectedAgent} onChange={(e) => setSelectedAgent(e.target.value)}>
+                <option value="lawyer">Lawyer</option>
+                <option value="philosopher">Philosopher</option>
+                <option value="monk">Monk</option>
+                <option value="productivity">Productivity Expert</option>
+              </select>
+            </div>
+            <div className="chat-messages">
+              {messages.map((message, index) => (
+                <div key={index} className={`message ${message.sender}`}>
+                  {message.text}
+                </div>
+              ))}
+            </div>
+            <div className="chat-input">
+              <input
+                type="text"
+                value={currentMessage}
+                onChange={(e) => setCurrentMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type your message..."
+              />
+              <button onClick={handleSendMessage}>Send</button>
             </div>
           </section>
         </div>

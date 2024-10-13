@@ -1,6 +1,33 @@
+"""
+The Divine Calendar API is a FastAPI application that provides endpoints for
+processing calendar events and querying a chatbot.
+
+The application uses the `ai_calendar_processor` and `ai_enlightened_chatbot`
+modules to process calendar events and query the chatbot, respectively.
+
+The application also uses the `calapi` module to authenticate with Google
+Calendar and extract events from the calendar.
+
+The application is configured using environment variables. The
+`UPLOAD_FOLDER` environment variable specifies the folder where uploaded
+files are stored. The `ALLOWED_EXTENSIONS` environment variable specifies the
+allowed file extensions for uploaded files. The `MAX_WORKERS` environment
+variable specifies the maximum number of workers to use for processing
+uploaded files.
+
+The application has the following endpoints:
+
+* `/process_calendar_events`: Processes a list of calendar events and
+  returns the processed events.
+* `/query_chat_bot`: Queries the chatbot with a given query and returns the
+  response.
+* `/health`: Returns a health check response.
+"""
+
 import os
 import logging
 from functools import lru_cache
+
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Any
 from functools import wraps
@@ -14,10 +41,14 @@ from pydantic_settings import BaseSettings
 import uvicorn
 from asyncio import wrap_future
 import json
-from calapi import authenticate_google_calendar, extract_calendar_events, update_event
+from calapi import (
+    authenticate_google_calendar,
+    extract_calendar_events,
+    update_or_create_event,
+)
 
 from ai_calendar_processor import AICalendarProcessor
-from ai_enlightened_chatbot import AIEnlightenedChatBot
+from ai_enlightened_chatbot import RAGAgent
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -44,13 +75,32 @@ app.add_middleware(
 
 
 class Settings(BaseSettings):
+    """
+    The application settings.
+
+    The settings are loaded from environment variables. The environment
+    variables are:
+
+    * `UPLOAD_FOLDER`: The folder where uploaded files are stored.
+    * `ALLOWED_EXTENSIONS`: The allowed file extensions for uploaded files.
+    * `MAX_WORKERS`: The maximum number of workers to use for processing
+      uploaded files.
+    """
+
     upload_folder: str = "uploads"
     allowed_extensions: set = {"jpg", "jpeg", "png", "gif"}
     max_workers: int = 4
     host: str = "0.0.0.0"
-    port: int = 5001
+    port: int = 8000
 
     class Config:
+        """
+        The configuration for the settings.
+
+        The configuration is used to load the settings from environment
+        variables.
+        """
+
         env_file = ".env"
 
 
@@ -59,17 +109,27 @@ settings = Settings()
 
 @lru_cache(maxsize=1)
 def get_calendar_processor() -> AICalendarProcessor:
+    """
+    Returns an instance of the `AICalendarProcessor` class.
+
+    The instance is cached using the `lru_cache` decorator.
+    """
     return AICalendarProcessor()
 
 
 @lru_cache(maxsize=1)
-def get_chat_bot() -> AIEnlightenedChatBot:
-    return AIEnlightenedChatBot()
+def get_chat_bot() -> RAGAgent:
+    """
+    Returns an instance of the `AIEnlightenedChatBot` class.
+
+    The instance is cached using the `lru_cache` decorator.
+    """
+    return RAGAgent()
 
 
 def allowed_file(filename: str) -> bool:
     """
-    Check if the given filename has an allowed extension.
+    Checks if the given filename has an allowed extension.
 
     Args:
         filename (str): The name of the file to check.
@@ -84,7 +144,15 @@ def allowed_file(filename: str) -> bool:
 
 
 def handle_exception(func: Callable) -> Callable:
-    """Decorator to handle exceptions in endpoint functions."""
+    """
+    A decorator to handle exceptions in endpoint functions.
+
+    Args:
+        func (Callable): The function to decorate.
+
+    Returns:
+        Callable: The decorated function.
+    """
 
     @wraps(func)
     async def wrapper(*args, **kwargs) -> Any:
@@ -105,11 +173,26 @@ def handle_exception(func: Callable) -> Callable:
 async def process_calendar(
     calendar_ids: list[str] = Body(...),
     date: str = Body(...),
-    questionnaire: str = None,
+    questionnaire: str = Body(...),
     processor: AICalendarProcessor = Depends(get_calendar_processor),
 ) -> JSONResponse:
-    global cal_ids, events, service, counter
+    """
+    Processes a list of calendar events and returns the processed events.
 
+    Args:
+        calendar_ids (list[str]): The list of calendar IDs to process.
+        date (str): The date to process events for.
+        questionnaire (str): The questionnaire to use for processing events.
+        processor (AICalendarProcessor): The `AICalendarProcessor` instance to use for
+            processing events.
+
+    Returns:
+        JSONResponse: The processed events.
+    """
+
+    global cal_ids, events, counter
+
+    service = authenticate_google_calendar()
     if not cal_ids or cal_ids != calendar_ids or last_date != date:
         cal_ids = calendar_ids
         events = extract_calendar_events(
@@ -119,16 +202,15 @@ async def process_calendar(
             end_date=date,
         )
         counter += 1
+        print(events)
 
     try:
-
         output = processor.predict(events, questionnaire=questionnaire)
-        for event in output["events"]:
-            update_event(
+        print(output)
+        for event in output:
+            update_or_create_event(
                 service,
-                calendar_id=event["calendar_id"],
-                event_id=event["id"],
-                values=event,
+                event_data=event,
             )
         return HTMLResponse(status_code=200, content=output)
 
@@ -141,20 +223,41 @@ async def process_calendar(
 async def query_char_bot(
     query: str = Body(...),
     agent: str = Body(...),
-    processor: AIEnlightenedChatBot = Depends(get_chat_bot),
+    processor: RAGAgent = Depends(get_chat_bot),
 ) -> JSONResponse:
+    """
+    Queries the chatbot with a given query and returns the response.
+
+    Args:
+        query (str): The query to ask the chatbot.
+        agent (str): The agent to use for querying the chatbot.
+        processor (AIEnlightenedChatBot): The `AIEnlightenedChatBot` instance to use for
+            querying the chatbot.
+
+    Returns:
+        JSONResponse: The response from the chatbot.
+    """
+
     if not agent in ["philosopher", "lawyer", "monk", "productivity"]:
         raise HTTPException(status_code=400, detail="Invalid agent type")
 
-    return JSONResponse(status_code=200, content=processor.predict(query, agent=agent))
+    return JSONResponse(
+        status_code=200, content=processor.query(query, agent_type=agent)
+    )
 
 
 @app.get("/health")
 async def health_check() -> JSONResponse:
+    """
+    Returns a health check response.
+
+    Returns:
+        JSONResponse: A health check response.
+    """
     return JSONResponse(content={"status": "healthy"})
 
 
 if __name__ == "__main__":
-    get_chat_bot()
+    # get_chat_bot()
     service = authenticate_google_calendar()
     uvicorn.run("main:app", host=settings.host, port=settings.port, reload=True)

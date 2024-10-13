@@ -7,6 +7,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from datetime import datetime
 
 
 DEFAULT_CALENDAR_ID = "54d33b5da85ac849627cf6d0bf1a7d09e5eb9afe42d6be24b3c5e9ade279cc35@group.calendar.google.com"
@@ -15,11 +16,13 @@ SCOPES = [
     "https://www.googleapis.com/auth/calendar.events",
 ]
 
+
 def encode_calendar_id(calendarId):
-    calendarId_bytes = calendarId.encode('utf-8')
+    calendarId_bytes = calendarId.encode("utf-8")
     cid_base64 = base64.b64encode(calendarId_bytes)
-    cid = cid_base64.decode().rstrip('=')
+    cid = cid_base64.decode().rstrip("=")
     return cid
+
 
 def authenticate_google_calendar():
     creds = None
@@ -96,17 +99,56 @@ def extract_calendar_events(
         return []
 
 
-def update_event(service, calendar_id="primary", event_id=None, values={}):
-    event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
+def update_or_create_event(service, event_data):
+    calendar_id = event_data.get("calendar_id", "primary")
+    event_id = event_data.get("id")
 
-    for key, value in values.items():
-        event[key] = value
+    event_body = {
+        "summary": event_data.get("summary"),
+        "description": event_data.get("description", ""),
+        "start": {
+            "dateTime": event_data.get("start"),
+            "timeZone": "America/Los_Angeles",
+        },
+        "end": {
+            "dateTime": event_data.get("end"),
+            "timeZone": "America/Los_Angeles",
+        },
+    }
 
-    updated_event = (
-        service.events()
-        .update(calendarId=calendar_id, eventId=event_id, body=event)
-        .execute()
-    )
+    try:
+        if event_id:
+            # Try to update the event
+            try:
+                updated_event = (
+                    service.events()
+                    .update(calendarId=calendar_id, eventId=event_id, body=event_body)
+                    .execute()
+                )
+                print(f"Event updated: {updated_event['summary']}")
+                return updated_event
+            except HttpError as error:
+                if error.resp.status == 404:
+                    # Event not found, create a new one
+                    print(f"Event with ID {event_id} not found. Creating a new event.")
+                    event_id = None
+                else:
+                    # Some other error occurred
+                    raise error
+
+        if not event_id:
+            # Create a new event
+            created_event = (
+                service.events()
+                .insert(calendarId=calendar_id, body=event_body)
+                .execute()
+            )
+            print(f"New event created: {created_event['summary']}")
+            return created_event
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return None
 
 
 if __name__ == "__main__":
