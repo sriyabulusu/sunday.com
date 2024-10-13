@@ -1,0 +1,16 @@
+conda-forge/osx-arm64                                       Using cache
+conda-forge/noarch                                          Using cache
+Transaction
+
+  Prefix: /Users/druhi/mambaforge/envs/cookr
+
+  All requested packages already installed
+
+
+Looking for: ['openai']
+
+
+Pinned packages:
+  - python 3.11.*
+
+
