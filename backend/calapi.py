@@ -161,7 +161,7 @@ if __name__ == "__main__":
         cal_id = event["calendar_id"]
         print(json.dumps(event, indent=4))
 
-        update_event(
+        update_or_create_event(
             service,
             calendar_id=cal_id,
             event_id=event_id,

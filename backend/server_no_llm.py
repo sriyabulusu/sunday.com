@@ -1,7 +1,12 @@
+from http.client import HTTPException
 import anthropic
 from fastapi import FastAPI
 from pydantic import BaseModel
-from calapi import authenticate_google_calendar, extract_calendar_events
+from calapi import (
+    authenticate_google_calendar,
+    extract_calendar_events,
+    update_or_create_event,
+)
 from fastapi.middleware.cors import CORSMiddleware
 import base64
 import json
@@ -24,8 +29,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins, replace with specific origins if needed
     allow_credentials=True,
-    allow_methods=["*"],   # Allows all methods (GET, POST, etc.), replace with specific methods if needed
-    allow_headers=["*"],   # Allows all headers, replace with specific headers if needed
+    allow_methods=[
+        "*"
+    ],  # Allows all methods (GET, POST, etc.), replace with specific methods if needed
+    allow_headers=["*"],  # Allows all headers, replace with specific headers if needed
 )
 
 claude_model = "claude-3-5-sonnet-20240620"  # Model name for Claude API
@@ -34,45 +41,84 @@ client = anthropic.Anthropic(
     api_key=ANTHROPIC_API_KEY
 )
 
+
 # Define the Pydantic model to validate the request body
 class CalendarRequest(BaseModel):
     calendar_ids: list[str]
     date: str = None
-    time_wake: str = None
-    time_sleep: str = None
-    most_productive: str = None
-    todo: str = None
-@app.post("/prompt/")
-def get_calendars(request: CalendarRequest):
-    global cal_ids, events, service, counter
+    questionnaire: str
 
-    metadata = {
-        "date": request.date,
-        "time_wake": request.time_wake,
-        "time_sleep": request.time_sleep,
-        "most_productive": request.most_productive,
-        "todo": request.todo,
-    }
 
+@app.post("/process_calendar_events/")
+async def process_calendar_events(request: CalendarRequest):
+    global cal_ids, events, service, counter, client
 
     if not cal_ids or cal_ids != request.calendar_ids or date != request.date:
         cal_ids = request.calendar_ids
         events = extract_calendar_events(
-          service,
-          calendar_ids=request.calendar_ids,
-          start_date=request.date,
-          end_date=request.date
+            service,
+            calendar_ids=request.calendar_ids,
+            start_date=request.date,
+            end_date=request.date,
         )
         counter += 1
 
+    str_friendly_events = [
+        f"{event['summary']} from {event['start']} to {event['end']}"
+        for event in events
+    ]
+
     prompt = f"""
-    Here are some things you need to know about me:
-    - I wake up at {metadata["time_wake"]} and sleep at {metadata["time_sleep"]}.
-    - I am most productive during {metadata["most_productive"]}.
-    - I want to accomplish the following on {metadata["date"]}: {metadata["todo"]}.
+You are an AI assistant specialized in calendar management and scheduling. Your task is to create or update events based on the given information and constraints.
+
+Current Calendar Events:
+{', '.join(str_friendly_events)}
+
+User's Questionnaire:
+{request.questionnaire}
+
+Instructions:
+1. Analyze the current calendar events and the user's questionnaire.
+2. Create new events or update existing ones to accommodate the user's requirements.
+3. Output ONLY an array of JSON objects representing the events to be created or updated.
+4. Do not move or modify existing events unless absolutely necessary.
+5. For new events, omit the 'id' field. For updating existing events, include the 'id' field.
+
+Event JSON Format:
+{json.dumps(events[0], indent=2)}
+
+Rules:
+- Output ONLY the JSON array, with no additional text or explanations.
+- Ensure all required fields are present in each event object.
+- Use ISO 8601 format for date-time values (e.g., "2024-03-15T09:00:00-07:00").
+- Do not schedule events outside of typical working hours (8 AM to 6 PM) unless specified.
+- Allow for reasonable buffer times between events (e.g., 15-30 minutes).
+- If updating an existing event is necessary, include its 'id' and modify only the required fields.
+
+Your response should be a valid JSON array that can be directly parsed and used by the calendar API.
     """
 
-    return
+    try:
+        client_response = client.messages.create(
+            model="claude-3-sonnet-20240229",
+            max_tokens=2048,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+        )
+
+        response_text = client_response.content[0].text
+        response_dict = json.loads(response_text)
+
+        for event in response_dict:
+            update_or_create_event(service, event_data=event)
+
+        return response_dict
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/upload-image/")
@@ -84,7 +130,6 @@ async def upload_image(file: UploadFile = File(...)):
         # Convert the file content to base64
         encoded_image_data = base64.b64encode(file_content).decode("utf-8")
         image_media_type = file.content_type  # Get the file's media type
-
 
         # Construct the payload for Claude API
         message = client.messages.create(
@@ -105,18 +150,13 @@ async def upload_image(file: UploadFile = File(...)):
                         {
                             "type": "text",
                             "text": "Explain the following image",
-                        }
+                        },
                     ],
                 }
             ],
         )
 
-
-        raw = "".join(
-            chain.from_iterable(
-                msg.text for msg in message.content
-            )
-        )
+        raw = "".join(chain.from_iterable(msg.text for msg in message.content))
 
         return JSONResponse(content={"response": raw})
 

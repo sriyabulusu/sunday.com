@@ -211,7 +211,7 @@ const App = () => {
     const body = {
       questionnaire: prompt,
       calendar_ids: calendarIds,
-      date: formData.day
+      date: formData.day,
     };
 
     try {
