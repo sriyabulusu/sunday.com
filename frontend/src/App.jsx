@@ -38,26 +38,29 @@ const App = () => {
     setError(null)
 
     // post request to localhost:8000/prompt with the following body:
-    /**
-     * metadata = {
-        "date": request.date,
-        "time_wake": request.time_wake,
-        "time_sleep": request.time_sleep,
-        "most_productive": request.most_productive,
-        "todo": request.todo,
-    }
-     */
+
+    // const body = {
+    //   date: formData.day,
+    //   time_wake: formData.wakeUpTime,
+    //   time_sleep: formData.sleepTime,
+    //   most_productive: formData.productivityHours,
+    //   calendar_ids: calendarIds,
+    //   todo: formData.text
+    // }
+    const prompt = `
+    Here are some things you need to know about me:
+    - I wake up at ${formData.wakeUpTime} and sleep at ${formData.sleepTime}.
+    - I am most productive during ${formData.productivityHours}.
+    - I want to accomplish the following on ${formData.day}: ${formData.text}.
+    `
 
     const body = {
-      date: formData.day,
-      time_wake: formData.wakeUpTime,
-      time_sleep: formData.sleepTime,
-      most_productive: formData.productivityHours,
+      questionnaire: prompt,
       calendar_ids: calendarIds,
-      todo: formData.text
+      date
     }
 
-    fetch('http://localhost:8000/prompt', {
+    fetch('http://localhost:8000/process_calendar_events', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

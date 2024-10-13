@@ -1,0 +1,37 @@
+.image-upload-container {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.nutrition-label {
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.nutrition-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.nutrition-item {
+  margin-bottom: 10px;
+}
+
+.nutrition-item label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.nutrition-item input {
+  width: 80px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
